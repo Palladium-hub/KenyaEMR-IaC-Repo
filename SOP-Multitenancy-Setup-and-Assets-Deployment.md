@@ -10,12 +10,71 @@ Run all commands from: cloned
 
 KenyaEMR-IaC-Repo
 
+### 0.0 One-Time MicroK8s First-Time Setup (Clean Bootstrap)
+
+Use this sequence once per new MicroK8s machine before tenant deploys.
+
+1.  Install MicroK8s (skip if already installed):
+
+``` bash
+sudo snap install microk8s --classic
+```
+
+2.  Ensure MicroK8s is running cleanly (restart + ready check):
+
+``` bash
+sudo microk8s stop
+sudo microk8s start
+microk8s status --wait-ready
+```
+
+3.  Configure kubeconfig for your local user (`mkdir` safely creates if
+    missing):
+
+``` bash
+mkdir -p ~/.kube
+sudo microk8s config > ~/.kube/config
+sudo chown -R "$(id -un):$(id -gn)" ~/.kube
+chmod 600 ~/.kube/config
+```
+
+4.  If `kubectl` is not already pointed to MicroK8s, use:
+
+``` bash
+alias kubectl="microk8s kubectl"
+kubectl config current-context
+```
+
+5.  Enable required addons:
+
+``` bash
+microk8s enable dns hostpath-storage ingress
+kubectl get pods -n ingress
+kubectl get ingressclass
+```
+
+6.  Apply the repository ingress service manifest (stable NodePorts):
+
+``` bash
+kubectl apply -f ingress-svc.yaml
+kubectl get svc nginx-ingress-microk8s-service -n ingress
+```
+
+7.  Ingress host resolution prerequisite:
+
+-   add your MicroK8s node IP to `/etc/hosts` for
+    `hub.hmislocal.org`, `keycloak.hmislocal.org`, and tenant hosts
+    like `<tenant>.hmislocal.org`
+-   current charts use `ingressClassName: nginx`; verify this class
+    exists with `kubectl get ingressclass`
+
 ### 0.1 Preflight Checks
 
 ``` bash
 pwd
 kubectl config current-context
 kubectl get ns
+kubectl get ingressclass
 terraform version
 helm version
 ```
@@ -258,19 +317,22 @@ Domain/host consistency notes:
 
 ### 0.12 Terraform Deploy Sequence
 
+First deployment on a new environment (required before using deployment
+scripts):
+
 ``` bash
 terraform fmt
 terraform init
 terraform validate
-terraform plan -target=module.<tenant>
-terraform apply -target=module.<tenant>
-```
-
-Optional full environment deploy:
-
-``` bash
 terraform plan
 terraform apply
+```
+
+Incremental deploy for a specific new tenant (after baseline exists):
+
+``` bash
+terraform plan -target=module.<tenant>
+terraform apply -target=module.<tenant>
 ```
 
 ### 0.13 Post-Deploy Validation
@@ -492,16 +554,25 @@ jq not found: Install via: sudo apt install jq
 
 # 12. First-Time Setup Checklist
 
-1.  Verify kubectl access
-2.  Verify MySQL pod running
-3.  Standardize backends
-4.  Fix seed config mounts
-5.  Enable SPA persistence
-6.  Deploy modules
-7.  Deploy config
-8.  Deploy SPA
-9.  Deploy DB scripts if required
-10. Restart backends
+1.  Install MicroK8s: `sudo snap install microk8s --classic` (if absent)
+2.  Restart and verify MicroK8s readiness
+3.  Configure kubeconfig (`mkdir -p ~/.kube`, `microk8s config`,
+    ownership, and `chmod 600`)
+4.  Enable MicroK8s addons: dns, hostpath-storage, ingress
+5.  Apply `ingress-svc.yaml` and verify ingress service in `ingress`
+    namespace
+6.  Verify kubectl access
+7.  Run first Terraform deployment (`terraform init`, `terraform plan`,
+    `terraform apply`)
+8.  Verify MySQL pod running
+9.  Standardize backends
+10. Fix seed config mounts
+11. Enable SPA persistence
+12. Deploy modules
+13. Deploy config
+14. Deploy SPA
+15. Deploy DB scripts if required
+16. Restart backends
 
 ------------------------------------------------------------------------
 
@@ -512,6 +583,19 @@ jq not found: Install via: sudo apt install jq
 -   Maintain consistent archive naming
 -   Avoid manual pod patching for large tenant sets
 -   Log all deployment operations
+
+------------------------------------------------------------------------
+
+## 14. Deployment Scripts Training Reference
+
+For script-by-script training content (separate runbook per script,
+inputs, prompts, behavior, and cautions), use:
+
+Deployment-Scripts-Training-Guide.md
+
+Scripts assessed from:
+
+`<deployment-scripts-dir>` (for example: `deplyoment-scripts`)
 
 ------------------------------------------------------------------------
 
