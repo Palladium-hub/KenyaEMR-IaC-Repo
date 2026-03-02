@@ -2,7 +2,7 @@
 
 This document explains the active deployment model for this repository.
 
-It intentionally describes only the current image-based workflow.
+It intentionally describes only the current image-based workflow. Legacy runtime deployment helpers are not part of the active operating model and are intentionally omitted from the documented repo tree below.
 
 ## 1. What this repository does
 
@@ -238,6 +238,22 @@ The current ingress template uses tenant hosts in this form:
 - `<tenant>.local`
 
 That means local DNS or `/etc/hosts` entries must resolve those tenant names to the cluster ingress endpoint.
+
+If you are testing locally, lock the tenant host mappings to localhost so network IP changes do not break browser access.
+
+Add the tenant hosts to `/etc/hosts` on your workstation.
+
+```bash
+sudo nano /etc/hosts
+```
+
+Example:
+
+```text
+127.0.0.1 north.local
+127.0.0.1 kayolesch.local
+127.0.0.1 mbagathicrh.local
+```
 
 ### Image packaging requirement
 

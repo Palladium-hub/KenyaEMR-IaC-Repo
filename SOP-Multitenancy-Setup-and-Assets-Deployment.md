@@ -356,16 +356,32 @@ The current chart routes traffic using tenant hosts in this format:
 
 That means your environment must resolve those hostnames to the cluster ingress endpoint.
 
-For local testing, update `/etc/hosts` or your local DNS with entries like:
+### 10.1 Add tenant URLs to /etc/hosts
 
-- `<cluster-ip> north.local`
-- `<cluster-ip> kayolesch.local`
-- `<cluster-ip> mbagathicrh.local`
+1. For local access on the same machine, standardize on localhost so network IP changes do not force you to keep updating host entries. Use `127.0.0.1` for tenant host mappings.
 
-Then access:
+2. Open your hosts file:
 
-- `http://north.local/openmrs`
-- `http://north.local/openmrs/spa`
+```bash
+sudo nano /etc/hosts
+```
+
+3. Add one entry for each tenant hostname you want to reach from your browser:
+
+```text
+127.0.0.1 north.local
+127.0.0.1 kayolesch.local
+127.0.0.1 mbagathicrh.local
+```
+
+4. Save the file, then test from the workstation:
+
+```bash
+curl http://north.local/openmrs
+curl http://north.local/openmrs/spa
+```
+
+If one ingress IP serves multiple tenants, you can also place multiple hostnames on one line in `/etc/hosts`.
 
 ## 11. Validation checklist after any deployment
 
