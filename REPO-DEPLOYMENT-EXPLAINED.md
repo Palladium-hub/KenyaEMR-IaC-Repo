@@ -2,7 +2,7 @@
 
 This document explains the active deployment model for this repository.
 
-It intentionally describes only the current image-based workflow. Legacy runtime deployment helpers are not part of the active operating model and are intentionally omitted from the documented repo tree below.
+It intentionally describes only the current image-based workflow.
 
 ## 1. What this repository does
 
