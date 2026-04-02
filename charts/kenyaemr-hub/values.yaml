@@ -1,0 +1,29 @@
+hub:
+  enabled: true
+  domain: taifacarehmis.dha.go.ke
+  knownTenants:
+    - name: coast
+      branding: Coast Region
+    - name: eastern
+      branding: Eastern Region
+    - name: nairobi
+      branding: Nairobi Region
+    - name: nyanza
+      branding: Nyanza Region
+    - name: rift
+      branding: Rift Valley Region
+    - name: western
+      branding: Western Region
+
+ingress:
+  enabled: true
+  className: nginx
+  host: taifacarehmis.dha.go.ke
+  tls:
+    - hosts:
+        - taifacarehmis.dha.go.ke
+      secretName: hmislocal-wildcard-tls
+
+
+deployment:
+  forceRedeployTimestamp: "2025-07-30T19:45:00Z"

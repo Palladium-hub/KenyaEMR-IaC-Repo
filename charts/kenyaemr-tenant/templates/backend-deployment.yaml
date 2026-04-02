@@ -17,12 +17,15 @@ spec:
       containers:
         - name: backend
           image: {{ .Values.tenant.backendImage }}
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: Always
           volumeMounts:
             - name: runtime-config
               mountPath: /openmrs/openmrs-runtime.properties
               subPath: runtime.properties
-          
+            - name: oauth2-config
+              mountPath: /openmrs/data/oauth2.properties
+              subPath: oauth2.properties
+
           env:
             - name: OMRS_CONFIG_CONNECTION_SERVER
               value: {{ .Values.tenant.dbHost }}
@@ -38,7 +41,11 @@ spec:
               value: "true"
             - name: OMRS_CONFIG_CREATE_TABLES
               value: "false"
+
       volumes:
         - name: runtime-config
           configMap:
             name: {{ .Values.tenant.name }}-runtime-config
+        - name: oauth2-config
+          configMap:
+            name: {{ .Values.tenant.name }}-oauth2-config

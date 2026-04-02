@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.tenant.name }}-oauth2-config
+  namespace: {{ .Release.Namespace }}
+data:
+  oauth2.properties: |
+    oauth2.clientId={{ .Values.tenant.oidc.clientId }}
+    oauth2.clientSecret={{ .Values.tenant.oidc.clientSecret | default "" }}
+    oauth2.authority=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.oidc.realm }}
+    oauth2.tokenUri=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.oidc.realm }}/protocol/openid-connect/token
+    oauth2.userInfoUri=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.oidc.realm }}/protocol/openid-connect/userinfo
+    oauth2.jwkSetUri=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.oidc.realm }}/protocol/openid-connect/certs
+    oauth2.redirectUri=https://{{ .Values.tenant.name }}.hmislocal.org/openmrs/spa/login
+    oauth2.logoutUri=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.oidc.realm }}/protocol/openid-connect/logout

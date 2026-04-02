@@ -1,0 +1,25 @@
+hub:
+  enabled: true
+  domain: traininghub.kenyahmis.org
+  knownTenants:
+    - name: central
+      branding: Central Region
+    - name: coast
+      branding: Coast Region
+    - name: eastern
+      branding: Eastern Region
+    - name: nairobi
+      branding: Nairobi Region
+    - name: northeastern
+      branding: North Eastern Region
+    - name: nyanza
+      branding: Nyanza Region
+    - name: rift
+      branding: Rift Valley Region
+    - name: western
+      branding: Western Region
+
+
+
+deployment:
+  forceRedeployTimestamp: "2025-07-30T19:45:00Z"

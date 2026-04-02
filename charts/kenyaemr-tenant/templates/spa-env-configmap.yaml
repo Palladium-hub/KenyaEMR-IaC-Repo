@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.tenant.name }}-spa-env
+  namespace: {{ .Release.Namespace }}
+data:
+  openmrs-spa.env.json: |
+    {
+      "backend": {
+        "url": "/openmrs"
+      },
+      "login": {
+        "strategy": "oidc",
+        "oidc": {
+          "authority": "https://keycloak.hmislocal.org/realms/kenyaemr",
+          "client_id": "openmrs-frontend",
+          "redirect_uri": "https://{{ .Values.tenant.name }}.hmislocal.org/openmrs/spa/login/callback",
+          "post_logout_redirect_uri": "https://{{ .Values.tenant.name }}.hmislocal.org/openmrs/spa"
+        }
+      }
+    }

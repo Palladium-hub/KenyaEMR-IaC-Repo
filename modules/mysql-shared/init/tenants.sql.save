@@ -1,0 +1,9 @@
+-- bethzatha Tenant
+CREATE DATABASE IF NOT EXISTS openmrs_bethzathagh CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'bethzatha_user'@'%' IDENTIFIED BY 'bethzatha_pass';
+GRANT ALL PRIVILEGES ON openmrs_bethzathagh.* TO 'bethzatha_user'@'%';
+
+-- bethel Tenant
+CREATE DATABASE IF NOT EXISTS openmrs_bethel CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER IF NOT EXISTS 'bethel_user'@'%' IDENTIFIED BY 'bethel_pass';
+GRANT ALL PRIVILEGES ON openmrs_bethel.* TO 'bethel_user'@'%';

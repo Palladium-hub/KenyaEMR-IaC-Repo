@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Training Hub</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background: url('./assets/login-background_am.png') no-repeat center center fixed;
+      background-size: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.9);
+      padding: 2rem 3rem;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    .login-logo {
+      max-width: 200px;
+      margin-bottom: 1.5rem;
+    }
+
+    h1 {
+      margin-bottom: 1rem;
+      font-size: 1.5rem;
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      text-align: left;
+    }
+
+    select, input[type="text"] {
+      width: 100%;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    input[type="submit"] {
+      margin-top: 2rem;
+      padding: 0.6rem 1.2rem;
+      width: 100%;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <img src="./assets/login-logo-am.png" alt="Login Logo" class="login-logo" />
+    <h1>Welcome to the Taifacare(K) Training Hub</h1>
+
+    <form action="" method="get" id="tenant-form">
+      <label for="tenant">Choose a facility:</label>
+      <select id="tenant" name="tenant">
+        {{- range .Values.hub.knownTenants }}
+          <option value="https://{{ .name }}.hmislocal.org/openmrs">{{ .branding }}</option>
+        {{- end }}
+      </select>
+
+<!--
+      <label for="username">Username (optional):</label>
+      <input type="text" id="username" name="username" placeholder="Enter username" />
+-->
+      <input type="submit" value="Continue" />
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("tenant-form");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+      const tenantUrl = form.tenant.value;
+      const username = form.username.value.trim();
+      let redirectUrl = tenantUrl;
+      if (username) {
+        redirectUrl += `/login.htm?username=${encodeURIComponent(username)}`;
+      }
+      window.location.href = redirectUrl;
+    });
+  </script>
+</body>
+</html>

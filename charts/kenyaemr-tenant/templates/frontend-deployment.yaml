@@ -16,6 +16,7 @@ spec:
       containers:
         - name: frontend
           image: {{ .Values.tenant.frontendImage }}
+          imagePullPolicy: Always
           env:
             - name: SPA_PATH
               value: /openmrs/spa
@@ -23,3 +24,11 @@ spec:
               value: /openmrs
             - name: SPA_DEFAULT_LOCALE
               value: en
+          volumeMounts:
+            - name: spa-env
+              mountPath: /usr/share/nginx/html/openmrs/spa/openmrs-spa.env.json
+              subPath: openmrs-spa.env.json
+      volumes:
+        - name: spa-env
+          configMap:
+            name: {{ .Values.tenant.name }}-spa-env

@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hub-index
+  namespace: {{ .Release.Namespace }}
+data:
+  index.html: |
+{{ .Files.Get "files/index.html" | indent 4 }}

@@ -49,6 +49,18 @@ resource "helm_release" "kenyaemr" {
       value = "${var.tenant_name}.local"
     },
     {
+      name  = "tenant.oidc.clientId"
+      value = var.oidc_client_id
+    },
+    {
+      name  = "tenant.oidc.issuer"
+      value = var.oidc_issuer
+    },
+    {
+      name  = "tenant.oidc.scope"
+      value = var.oidc_scope
+    },
+    {
       name  = "deployment.forceRedeployTimestamp"
       value = timestamp()
     }

@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.tenant.name }}-runtime-config
+  namespace: {{ .Release.Namespace }}
+data:
+  runtime.properties: |
+    connection.url=jdbc:mysql://{{ .Values.tenant.dbHost }}/{{ .Values.tenant.dbSchema }}?autoReconnect=true&useSSL=false
+    connection.username={{ .Values.tenant.dbUser }}
+    connection.password={{ .Values.tenant.dbPassword }}
+    module.allow_web_admin=true
+    auto_update_database=true
+    create_tables=false
+    oauth2.login.enabled=true
+    oauth2.clientId=openmrs-backend
+    oauth2.clientSecret=<keycloak-client-secret>
+    oauth2.authority=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.name }}
+    oauth2.tokenUrl=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.name }}/protocol/openid-connect/token
+    oauth2.authorizationUrl=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.name }}/protocol/openid-connect/auth
+    oauth2.userInfoUrl=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.name }}/protocol/openid-connect/userinfo
+    oauth2.logoutUrl=https://keycloak.hmislocal.org/realms/{{ .Values.tenant.name }}/protocol/openid-connect/logout
+    oauth2.redirectUri=https://{{ .Values.tenant.name }}.hmislocal.org/openmrs/oauth2callback

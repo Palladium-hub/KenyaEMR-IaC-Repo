@@ -1,0 +1,46 @@
+{{- if .Values.hub.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hub-landing
+  namespace: hub
+  labels:
+    app: hub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hub
+  template:
+    metadata:
+      labels:
+        app: hub
+    spec:
+      containers:
+        - name: nginx
+          image: hakeemraj/hublanding-training:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html
+              mountPath: /usr/share/nginx/html/index.html
+              subPath: index.html
+      volumes:
+        - name: html
+          configMap:
+            name: {{ include "kenyaemr-hub.fullname" . }}-landing
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hub-landing
+  namespace: hub
+spec:
+  selector:
+    app: hub
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+{{- end }}

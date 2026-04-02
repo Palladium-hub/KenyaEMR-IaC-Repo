@@ -23,13 +23,13 @@ variable "db_user" {
 variable "db_password" {
   description = "Database password"
   type        = string
-  default     = "Admin123"
+  default = ""
 }
 
 variable "chart_path" {
-  description = "Path to the KenyaEMR Helm chart"
+  description = "Path to the EMR Helm chart"
   type        = string
-  }
+}
 
 variable "backend_image" {
   description = "Backend Docker image for the tenant"
@@ -40,5 +40,26 @@ variable "backend_image" {
 variable "frontend_image" {
   description = "Frontend Docker image for the tenant"
   type        = string
-  default     = "hakeemraj/kenyaemr-frontend:latest"
+  default     = "hakeemraj/kenyaemr-frontend:multi"
+}
+
+variable "oidc_client_id" {
+  description = "OIDC client ID for the tenant"
+  type        = string
+}
+
+variable "oidc_issuer" {
+  description = "OIDC issuer URL"
+  type        = string
+}
+
+variable "oidc_scope" {
+  description = "OIDC scopes for authentication"
+  type        = string
+  default     = "openid profile email"
+}
+
+variable "oidc_realm" {
+  description = "Keycloak realm for the tenant"
+  type        = string
 }

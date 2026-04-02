@@ -9,8 +9,12 @@ metadata:
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - {{ .Values.tenant.name }}.hmislocal.org
+      secretName: hmislocal-wildcard-tls
   rules:
-    - host: {{ .Values.tenant.name }}.local
+    - host: {{ .Values.tenant.name }}.hmislocal.org
       http:
         paths:
           - path: /openmrs/spa(/|$)(.*)
