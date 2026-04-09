@@ -19,17 +19,43 @@ terraform {
   }
 }
 
+provider "aws" {}
+
 provider "kubernetes" {
-  config_path = "~/.kube/config"
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+  }
 }
 
 provider "helm" {
   kubernetes {
-    config_path = "~/.kube/config"
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority)
+    exec {
+      api_version = "client.authentication.k8s.io/v1beta1"
+      command     = "aws"
+      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
+    }
   }
 }
 
-provider "aws" {}
+# --- EKS Cluster + Node Group + Access Entries ---
+
+module "eks" {
+  source              = "./modules/eks"
+  cluster_name        = var.cluster_name
+  cluster_version     = var.cluster_version
+  vpc_id              = var.vpc_id
+  private_subnet_ids  = var.private_subnet_ids
+  node_instance_types = var.node_instance_types
+  node_desired_size   = var.node_desired_size
+  node_min_size       = var.node_min_size
+  node_max_size       = var.node_max_size
+}
 
 # --- RDS (replaces in-cluster MySQL) ---
 
@@ -37,7 +63,7 @@ module "rds" {
   source                     = "./modules/rds"
   vpc_id                     = var.vpc_id
   private_subnet_ids         = var.private_subnet_ids
-  eks_node_security_group_id = var.eks_node_security_group_id
+  eks_node_security_group_id = module.eks.node_security_group_id
   db_instance_class          = var.db_instance_class
   kms_key_id                 = var.kms_key_id
 }
