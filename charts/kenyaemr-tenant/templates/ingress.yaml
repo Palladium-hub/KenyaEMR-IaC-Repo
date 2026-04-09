@@ -6,22 +6,25 @@ metadata:
     app.kubernetes.io/name: {{ .Release.Name }}-kenyaemr
     app.kubernetes.io/instance: {{ .Release.Name }}
   annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}]'
+    alb.ingress.kubernetes.io/healthcheck-path: /openmrs
+    alb.ingress.kubernetes.io/group.name: {{ .Values.tenant.name }}
 spec:
-  ingressClassName: nginx
+  ingressClassName: alb
   rules:
-    - host: {{ .Values.tenant.name }}.local
-      http:
+    - http:
         paths:
-          - path: /openmrs/spa(/|$)(.*)
-            pathType: ImplementationSpecific
+          - path: /openmrs/spa
+            pathType: Prefix
             backend:
               service:
                 name: {{ .Values.tenant.name }}-frontend
                 port:
                   number: 80
-          - path: /openmrs(/|$)(.*)
-            pathType: ImplementationSpecific
+          - path: /openmrs
+            pathType: Prefix
             backend:
               service:
                 name: {{ .Values.tenant.name }}-backend

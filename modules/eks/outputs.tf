@@ -22,3 +22,13 @@ output "node_role_arn" {
   description = "IAM role ARN of the node group"
   value       = aws_iam_role.node.arn
 }
+
+output "lb_controller_role_arn" {
+  description = "IAM role ARN for the AWS Load Balancer Controller"
+  value       = aws_iam_role.lb_controller.arn
+}
+
+output "oidc_provider_arn" {
+  description = "ARN of the OIDC provider for IRSA"
+  value       = aws_iam_openid_connect_provider.cluster.arn
+}

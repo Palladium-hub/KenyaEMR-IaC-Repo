@@ -16,10 +16,16 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
   }
 }
 
-provider "aws" {}
+provider "aws" {
+  region = var.aws_region
+}
 
 provider "kubernetes" {
   host                   = module.eks.cluster_endpoint
@@ -43,26 +49,77 @@ provider "helm" {
   }
 }
 
+# --- VPC ---
+
+module "vpc" {
+  source             = "./modules/vpc"
+  cluster_name       = var.cluster_name
+  vpc_cidr           = var.vpc_cidr
+  availability_zones = var.availability_zones
+}
+
 # --- EKS Cluster + Node Group + Access Entries ---
 
 module "eks" {
   source              = "./modules/eks"
   cluster_name        = var.cluster_name
   cluster_version     = var.cluster_version
-  vpc_id              = var.vpc_id
-  private_subnet_ids  = var.private_subnet_ids
+  vpc_id              = module.vpc.vpc_id
+  private_subnet_ids  = module.vpc.private_subnet_ids
   node_instance_types = var.node_instance_types
   node_desired_size   = var.node_desired_size
   node_min_size       = var.node_min_size
   node_max_size       = var.node_max_size
 }
 
+# --- AWS Load Balancer Controller (Helm) ---
+
+resource "helm_release" "aws_lb_controller" {
+  name       = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+  repository = "https://aws.github.io/eks-charts"
+  chart      = "aws-load-balancer-controller"
+  version    = "1.11.0"
+
+  set {
+    name  = "clusterName"
+    value = module.eks.cluster_name
+  }
+
+  set {
+    name  = "serviceAccount.create"
+    value = "true"
+  }
+
+  set {
+    name  = "serviceAccount.name"
+    value = "aws-load-balancer-controller"
+  }
+
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = module.eks.lb_controller_role_arn
+  }
+
+  set {
+    name  = "region"
+    value = var.aws_region
+  }
+
+  set {
+    name  = "vpcId"
+    value = module.vpc.vpc_id
+  }
+
+  depends_on = [module.eks]
+}
+
 # --- RDS (replaces in-cluster MySQL) ---
 
 module "rds" {
   source                     = "./modules/rds"
-  vpc_id                     = var.vpc_id
-  private_subnet_ids         = var.private_subnet_ids
+  vpc_id                     = module.vpc.vpc_id
+  private_subnet_ids         = module.vpc.private_subnet_ids
   eks_node_security_group_id = module.eks.node_security_group_id
   db_instance_class          = var.db_instance_class
   kms_key_id                 = var.kms_key_id

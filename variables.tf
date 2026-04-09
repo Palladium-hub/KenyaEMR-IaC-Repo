@@ -1,11 +1,19 @@
-variable "vpc_id" {
-  description = "VPC ID for the EKS cluster and RDS"
+variable "aws_region" {
+  description = "AWS region to deploy into"
   type        = string
+  default     = "eu-west-3"
 }
 
-variable "private_subnet_ids" {
-  description = "Private subnet IDs for EKS, node groups, and RDS"
+variable "vpc_cidr" {
+  description = "CIDR block for the VPC"
+  type        = string
+  default     = "10.0.0.0/16"
+}
+
+variable "availability_zones" {
+  description = "Availability zones in the target region"
   type        = list(string)
+  default     = ["eu-west-3a", "eu-west-3b", "eu-west-3c"]
 }
 
 variable "cluster_name" {
@@ -62,8 +70,3 @@ variable "rotation_lambda_arn" {
   default     = null
 }
 
-variable "eks_node_security_group_id" {
-  description = "Security group ID of EKS worker nodes (used if providing your own cluster)"
-  type        = string
-  default     = ""
-}
