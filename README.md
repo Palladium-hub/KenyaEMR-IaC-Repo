@@ -90,6 +90,28 @@ db_instance_class   = "db.t3.medium"
 3. Create the database schema and user on RDS
 4. Run `terraform apply`
 
+## RDS Snapshots
+
+On `terraform destroy`, RDS automatically creates a final snapshot named `kenyaemr-mysql-final-snapshot` before deleting the instance. To restore from it later:
+
+```bash
+aws rds restore-db-instance-from-db-snapshot \
+  --db-instance-identifier kenyaemr-mysql-restored \
+  --db-snapshot-identifier kenyaemr-mysql-final-snapshot \
+  --region eu-west-3
+```
+
+## Destroy Order
+
+Terraform handles destroy ordering automatically via `depends_on` chains. Tenant workloads and the LB controller are destroyed before access entries and the cluster. If you hit `Unauthorized` errors during destroy (e.g. access entries were manually removed), clean up state first:
+
+```bash
+terraform state rm module.mbagathiemr
+terraform state rm module.kayoleemr
+terraform state rm helm_release.aws_lb_controller
+terraform destroy
+```
+
 ## Reference
 
 - [OpenMRS Kubernetes Deployment Guide](https://openmrs.atlassian.net/wiki/spaces/docs/pages/189464758/Kubernetes)

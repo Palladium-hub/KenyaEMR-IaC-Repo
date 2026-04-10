@@ -32,3 +32,15 @@ output "oidc_provider_arn" {
   description = "ARN of the OIDC provider for IRSA"
   value       = aws_iam_openid_connect_provider.cluster.arn
 }
+
+output "access_entries_ready" {
+  description = "Marker that access entries are configured (use for depends_on ordering)"
+  value       = true
+
+  depends_on = [
+    aws_eks_access_entry.admin_user,
+    aws_eks_access_policy_association.admin_user,
+    aws_eks_access_entry.admin_role,
+    aws_eks_access_policy_association.admin_role,
+  ]
+}

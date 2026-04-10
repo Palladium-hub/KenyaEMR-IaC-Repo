@@ -158,6 +158,8 @@ module "mbagathiemr" {
   db_password    = module.mbagathi_secrets.db_password
   backend_image  = "openmrs/openmrs-reference-application-3-backend:nightly-core-2.8"
   frontend_image = "openmrs/openmrs-reference-application-3-frontend:nightly-core-2.8"
+
+  depends_on = [module.eks]
 }
 
 module "kayoleemr" {
@@ -171,6 +173,8 @@ module "kayoleemr" {
   db_password    = module.kayole_secrets.db_password
   backend_image  = "openmrs/openmrs-reference-application-3-backend:nightly-core-2.8"
   frontend_image = "openmrs/openmrs-reference-application-3-frontend:nightly-core-2.8"
+
+  depends_on = [module.eks]
 }
 
 # Add more tenants here...
