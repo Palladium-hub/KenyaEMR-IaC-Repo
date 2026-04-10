@@ -70,3 +70,15 @@ variable "rotation_lambda_arn" {
   default     = null
 }
 
+variable "cluster_admin_user_arns" {
+  description = "List of IAM user ARNs to grant EKS cluster admin access"
+  type        = list(string)
+  default     = []
+}
+
+variable "cluster_admin_role_arns" {
+  description = "List of IAM role ARNs to grant EKS cluster admin access"
+  type        = list(string)
+  default     = []
+}
+

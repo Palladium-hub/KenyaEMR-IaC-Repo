@@ -61,15 +61,17 @@ module "vpc" {
 # --- EKS Cluster + Node Group + Access Entries ---
 
 module "eks" {
-  source              = "./modules/eks"
-  cluster_name        = var.cluster_name
-  cluster_version     = var.cluster_version
-  vpc_id              = module.vpc.vpc_id
-  private_subnet_ids  = module.vpc.private_subnet_ids
-  node_instance_types = var.node_instance_types
-  node_desired_size   = var.node_desired_size
-  node_min_size       = var.node_min_size
-  node_max_size       = var.node_max_size
+  source                  = "./modules/eks"
+  cluster_name            = var.cluster_name
+  cluster_version         = var.cluster_version
+  vpc_id                  = module.vpc.vpc_id
+  private_subnet_ids      = module.vpc.private_subnet_ids
+  node_instance_types     = var.node_instance_types
+  node_desired_size       = var.node_desired_size
+  node_min_size           = var.node_min_size
+  node_max_size           = var.node_max_size
+  cluster_admin_user_arns = var.cluster_admin_user_arns
+  cluster_admin_role_arns = var.cluster_admin_role_arns
 }
 
 # --- AWS Load Balancer Controller (Helm) ---
@@ -156,8 +158,8 @@ module "mbagathiemr" {
   db_host        = module.rds.rds_address
   db_user        = "mbagathi_user"
   db_password    = module.mbagathi_secrets.db_password
-  backend_image  = "openmrs/openmrs-reference-application-3-backend:nightly-core-2.8"
-  frontend_image = "openmrs/openmrs-reference-application-3-frontend:nightly-core-2.8"
+  backend_image  = "hakeemraj/kenyaemr-backend:latest"
+  frontend_image = "hakeemraj/kenyaemr-frontend:latest"
 
   depends_on = [module.eks]
 }
@@ -171,8 +173,8 @@ module "kayoleemr" {
   db_host        = module.rds.rds_address
   db_user        = "kayole_user"
   db_password    = module.kayole_secrets.db_password
-  backend_image  = "openmrs/openmrs-reference-application-3-backend:nightly-core-2.8"
-  frontend_image = "openmrs/openmrs-reference-application-3-frontend:nightly-core-2.8"
+  backend_image  = "hakeemraj/kenyaemr-backend:latest"
+  frontend_image = "hakeemraj/kenyaemr-frontend:latest"
 
   depends_on = [module.eks]
 }

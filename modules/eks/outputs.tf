@@ -38,9 +38,9 @@ output "access_entries_ready" {
   value       = true
 
   depends_on = [
-    aws_eks_access_entry.admin_user,
-    aws_eks_access_policy_association.admin_user,
-    aws_eks_access_entry.admin_role,
-    aws_eks_access_policy_association.admin_role,
+    aws_eks_access_entry.admin_users,
+    aws_eks_access_policy_association.admin_users,
+    aws_eks_access_entry.admin_roles,
+    aws_eks_access_policy_association.admin_roles,
   ]
 }

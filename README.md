@@ -2,6 +2,76 @@
 
 Terraform-managed multi-tenant deployment of [OpenMRS/KenyaEMR](https://openmrs.atlassian.net/wiki/spaces/docs/pages/189464758/Kubernetes) on AWS EKS.
 
+## What Changed (aws-review branch)
+
+This branch replaces the original local-cluster setup with a fully AWS-managed infrastructure. Here's what was added and changed compared to `main`:
+
+### VPC (new)
+- Dedicated VPC (`10.0.0.0/16`) with 3 public and 3 private subnets across `eu-west-3a`, `eu-west-3b`, `eu-west-3c`
+- Internet gateway for public subnets, NAT gateway for private subnet outbound access
+- Subnets tagged for EKS auto-discovery (`kubernetes.io/role/elb`, `kubernetes.io/role/internal-elb`)
+- Module: `modules/vpc/`
+
+### EKS Cluster (new)
+- Managed EKS cluster with Kubernetes 1.31
+- AL2023 Linux managed node group (`m5.large`, 2 desired / 4 max)
+- EKS add-ons: `vpc-cni`, `coredns`, `kube-proxy`
+- OIDC provider for IAM Roles for Service Accounts (IRSA)
+- Kubernetes and Helm providers authenticate dynamically via `aws eks get-token` (no more `~/.kube/config` dependency)
+- Module: `modules/eks/`
+
+### EKS Access Entries (new)
+- Configurable cluster admin access for IAM users and roles
+- Set in `terraform.tfvars`:
+  ```hcl
+  cluster_admin_user_arns = [
+    "arn:aws:iam::123456789012:user/your-iam-user",
+  ]
+  cluster_admin_role_arns = [
+    "arn:aws:iam::123456789012:role/YourAdminRole",
+  ]
+  ```
+- Uses `AmazonEKSClusterAdminPolicy` with cluster-wide scope
+- Node group gets an automatic `EC2_LINUX` access entry
+- Files: `variables.tf` (root), `modules/eks/variables.tf`, `modules/eks/main.tf`
+
+### RDS MySQL (new — replaces in-cluster MySQL)
+- Amazon RDS MySQL 8.0 (multi-AZ, encrypted, automated backups)
+- Replaces the old `modules/mysql-shared/` which ran MySQL in a pod with `emptyDir` storage
+- Security group allows inbound 3306 only from EKS node security group
+- The RDS endpoint is resolved at apply time and automatically propagated to each tenant's runtime ConfigMap (`<tenant>-runtime-config`) as the JDBC connection URL, and to the backend pod environment variables (`OMRS_CONFIG_CONNECTION_SERVER`). No manual endpoint configuration is needed.
+- Module: `modules/rds/`
+
+### AWS Secrets Manager (new — replaces plaintext credentials)
+- Per-tenant database credentials stored in Secrets Manager (`kenyaemr/<tenant>/db-credentials`)
+- Passwords auto-generated (24 chars) via `random_password`
+- Optional 30-day automatic rotation via Lambda (set `rotation_lambda_arn` in tfvars)
+- RDS master password managed by AWS (`manage_master_user_password = true`)
+- Terraform variables marked `sensitive = true`
+- Module: `modules/tenant-secrets/`
+
+### AWS Load Balancer Controller (new — replaces nginx ingress)
+- Deployed via Helm into `kube-system` with IRSA
+- IAM policy from the [official upstream](https://github.com/kubernetes-sigs/aws-load-balancer-controller)
+- Ingress templates updated: `ingressClassName: alb`, path-based routing, no host-based rules
+- Each tenant gets its own ALB via `alb.ingress.kubernetes.io/group.name`
+
+### Helm Chart Changes
+- Backend deployment: added `containerPort`, resource requests/limits, readiness/liveness probes
+- Frontend deployment: added `containerPort`, resource requests/limits, readiness/liveness probes
+- Resource defaults configurable via `values.yaml` (`backend.resources`, `frontend.resources`)
+- Removed `init-db-job.yaml` (no longer needed with RDS)
+- Removed empty `configMap.yaml`
+- Removed `timestamp()` force-redeploy hack from Helm release
+- Fixed `set` block syntax (individual `set {}` blocks instead of list-of-objects)
+
+### Removed
+- `modules/mysql-shared/` — replaced by RDS
+- `modules/mysql-shared/init/tenants.sql` — tenant DB/user creation now handled externally
+- `charts/kenyaemr-tenant/templates/init-db-job.yaml` — DB restore job no longer needed
+- `charts/kenyaemr-tenant/templates/configMap.yaml` — was empty
+- Hardcoded credentials throughout
+
 ## Architecture
 
 This repo provisions the full stack from scratch in a single `terraform apply`:
@@ -39,16 +109,30 @@ Current tenants: `mbagathicrh`, `kayolesch`
 
 | Component | Image |
 |-----------|-------|
-| Backend | `openmrs/openmrs-reference-application-3-backend:nightly-core-2.8` |
-| Frontend | `openmrs/openmrs-reference-application-3-frontend:nightly-core-2.8` |
+| Backend | `hakeemraj/kenyaemr-backend:latest` |
+| Frontend | `hakeemraj/kenyaemr-frontend:latest` |
 
 ## EKS Access Entries
 
-| Principal | Type | Policy |
-|-----------|------|--------|
-| Node group role | EC2_LINUX | — |
-| `arn:aws:iam::<account-id>:user/maccli` | STANDARD | AmazonEKSClusterAdminPolicy |
-| `arn:aws:iam::<account-id>:role/Admin` | STANDARD | AmazonEKSClusterAdminPolicy |
+Access entries are configured via `terraform.tfvars`. Set the IAM user and role ARNs that should have cluster admin access:
+
+```hcl
+# terraform.tfvars
+cluster_admin_user_arns = [
+  "arn:aws:iam::123456789012:user/your-iam-user",
+]
+
+cluster_admin_role_arns = [
+  "arn:aws:iam::123456789012:role/YourAdminRole",
+]
+```
+
+These are defined in:
+- `variables.tf` (root) — `cluster_admin_user_arns` and `cluster_admin_role_arns`
+- `modules/eks/variables.tf` — passed through to the EKS module
+- `modules/eks/main.tf` — creates `aws_eks_access_entry` and `aws_eks_access_policy_association` resources with `AmazonEKSClusterAdminPolicy`
+
+The node group automatically gets an `EC2_LINUX` access entry.
 
 ## Requirements
 

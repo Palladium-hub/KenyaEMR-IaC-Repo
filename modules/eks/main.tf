@@ -206,40 +206,44 @@ resource "aws_eks_access_entry" "linux_nodes" {
   type          = "EC2_LINUX"
 }
 
-# Cluster admin — IAM user maccli
-resource "aws_eks_access_entry" "admin_user" {
+# Cluster admin — IAM users
+resource "aws_eks_access_entry" "admin_users" {
+  for_each      = toset(var.cluster_admin_user_arns)
   cluster_name  = aws_eks_cluster.this.name
-  principal_arn = "arn:aws:iam::523811661303:user/maccli"
+  principal_arn = each.value
   type          = "STANDARD"
 }
 
-resource "aws_eks_access_policy_association" "admin_user" {
+resource "aws_eks_access_policy_association" "admin_users" {
+  for_each      = toset(var.cluster_admin_user_arns)
   cluster_name  = aws_eks_cluster.this.name
-  principal_arn = "arn:aws:iam::523811661303:user/maccli"
+  principal_arn = each.value
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
 
   access_scope {
     type = "cluster"
   }
 
-  depends_on = [aws_eks_access_entry.admin_user]
+  depends_on = [aws_eks_access_entry.admin_users]
 }
 
-# Cluster admin — IAM role Admin
-resource "aws_eks_access_entry" "admin_role" {
+# Cluster admin — IAM roles
+resource "aws_eks_access_entry" "admin_roles" {
+  for_each      = toset(var.cluster_admin_role_arns)
   cluster_name  = aws_eks_cluster.this.name
-  principal_arn = "arn:aws:iam::523811661303:role/Admin"
+  principal_arn = each.value
   type          = "STANDARD"
 }
 
-resource "aws_eks_access_policy_association" "admin_role" {
+resource "aws_eks_access_policy_association" "admin_roles" {
+  for_each      = toset(var.cluster_admin_role_arns)
   cluster_name  = aws_eks_cluster.this.name
-  principal_arn = "arn:aws:iam::523811661303:role/Admin"
+  principal_arn = each.value
   policy_arn    = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
 
   access_scope {
     type = "cluster"
   }
 
-  depends_on = [aws_eks_access_entry.admin_role]
+  depends_on = [aws_eks_access_entry.admin_roles]
 }

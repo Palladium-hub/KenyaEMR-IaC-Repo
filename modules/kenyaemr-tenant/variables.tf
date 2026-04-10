@@ -32,11 +32,11 @@ variable "chart_path" {
 variable "backend_image" {
   description = "Backend Docker image for the tenant"
   type        = string
-  default     = "openmrs/openmrs-reference-application-3-backend:nightly-core-2.8"
+  default     = "hakeemraj/kenyaemr-backend:latest"
 }
 
 variable "frontend_image" {
   description = "Frontend Docker image for the tenant"
   type        = string
-  default     = "openmrs/openmrs-reference-application-3-frontend:nightly-core-2.8"
+  default     = "hakeemraj/kenyaemr-frontend:latest"
 }
