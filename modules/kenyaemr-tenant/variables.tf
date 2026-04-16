@@ -9,27 +9,25 @@ variable "db_schema" {
 }
 
 variable "db_host" {
-  description = "MySQL database host"
+  description = "MySQL database host (RDS endpoint)"
   type        = string
-  default     = "mysql.default.svc.cluster.local"
 }
 
 variable "db_user" {
   description = "Database username"
   type        = string
-  default     = "openmrs"
 }
 
 variable "db_password" {
-  description = "Database password"
+  description = "Database password (from Secrets Manager)"
   type        = string
-  default     = "Admin123"
+  sensitive   = true
 }
 
 variable "chart_path" {
   description = "Path to the KenyaEMR Helm chart"
   type        = string
-  }
+}
 
 variable "backend_image" {
   description = "Backend Docker image for the tenant"

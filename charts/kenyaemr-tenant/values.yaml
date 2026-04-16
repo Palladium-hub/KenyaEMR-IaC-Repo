@@ -6,14 +6,25 @@ tenant:
   dbSchema: ""
   dbUser: ""
   dbPassword: ""
-  dbRestoreImageTag: "v2.0"  
 
 ingress:
   enabled: true
   host: ""
 
-deployment:
-  forceRedeployTimestamp: ""
+backend:
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2"
+      memory: "2Gi"
 
-dbRestore:
-  enabled: false
+frontend:
+  resources:
+    requests:
+      cpu: "100m"
+      memory: "128Mi"
+    limits:
+      cpu: "500m"
+      memory: "256Mi"
