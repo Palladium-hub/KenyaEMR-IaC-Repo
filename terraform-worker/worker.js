@@ -342,7 +342,7 @@ async function getOperation(operationId) {
 ============================================================ */
 
 const TENANTS_DIR = path.join(TF_DIR, 'tenants');
-const TEMPLATE_DIR = path.join(TENANTS_DIR, '_template');
+const TEMPLATE_DIR = path.join(TENANTS_DIR, 'template');
 
 const S3_BUCKET = process.env.TF_STATE_BUCKET || 'kilifi-wal-archive-prod';
 const S3_REGION = process.env.TF_STATE_REGION || 'af-south-1';
